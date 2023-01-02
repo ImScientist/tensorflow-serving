@@ -1,0 +1,44 @@
+version: '3.7'
+
+services:
+  tf_service:
+    image: tensorflow/serving:2.11.0
+    container_name: tf_service
+    volumes:
+      - ./models/:/models/
+    ports:
+      - "8500:8500"
+      - "8501:8501"
+    command:
+      - '--model_config_file=/models/models.config'
+      - '--monitoring_config_file=/models/monitoring.config'
+      - '--allow_version_labels_for_unavailable_models=true'
+      - '--model_config_file_poll_wait_seconds=60'
+      - '--rest_api_port=8501'
+    networks:
+      - default_network
+
+  prometheus:
+    image: prom/prometheus:v2.41.0
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    depends_on:
+      - tf_service
+    networks:
+      - default_network
+
+  grafana:
+    image: grafana/grafana:9.3.2
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - default_network
+
+
+networks:
+  default_network:
+    name: default_network

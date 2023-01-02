@@ -142,7 +142,7 @@
 - We have to create a Model Server config file (in `$(pwd)/models/models.config`):
   ```shell
   # periodically poll for updated versions
-  docker run -t --rm -p 8501:8501 \
+  docker run -t --rm -p 8501:8501 -p 8500:8500\
       --name=serving \
       -v "$(pwd)/models/:/models/" \
       tensorflow/serving \
@@ -173,12 +173,71 @@
        -d '{"signature_name": "serving_default", "instances": [{"x": [0, 1, 2]}]}'
   ```
 
+## Monitoring with Prometheus and Visualization with Grafana
 
-    version_labels {
-      key: 'stable'
-      value: 1
-    }
-    version_labels {
-      key: 'canary'
-      value: 2
-    }
+- Create a `models/monitoring.config` file with the following content:
+  ```
+  prometheus_config {
+    enable: true,
+    path: "/monitoring/prometheus/metrics"
+  }
+  ```
+
+
+- Create a `promeheus.yml` file. The `scrape_configs.metrics_path` matches the endpoint exposed in `models/monitoring.config`.
+
+
+- Use docker-compose to allow all services to communicate with each other:
+  ```shell
+  docker-compose up
+  ```
+
+
+- From `docker-compose.yml` you can see that:
+  - to read metrics from the `/monitoring/prometheus/metrics` we have enabled the HTTP server by setting `--rest_api_port=8501` and `--monitoring_config_file=/models/monitoring.config`. You can verify that the metrics are exposed by visiting `http://localhost:8501/monitoring/prometheus/metrics`.
+  
+  - you should be able to access the Prometheus web UI through `localhost:9090`.
+ 
+  - you should be able to access the Grafana WebUI through `localhost:3000`. The username and password are `admin` and `admin`, respectively. In the WebUI you can add a new datasource with the url `http://prometheus:9090`
+
+
+## Kubernetes
+
+- Copy all models that will be deployed to a separate docker volume.
+  ```shell
+  docker volume create --name tf_models
+  
+  docker container create --name dummy -v tf_models:/root/models hello-world
+  docker cp ./models/ dummy:/root/
+  docker rm dummy
+  
+  # Check if the models were copied in the tf_models volume 
+  docker run -it --rm --name temp -v tf_models:/root/models alpine /bin/sh
+  ls root/models/
+  exit
+  ```
+
+- Test that you can mount the container:
+  ```shell
+    
+  # -v "$(pwd)/models/:/models/"
+  
+  docker run -t --rm -p 8501:8501 -p 8500:8500\
+      --name=serving \
+      -v tf_models:/models \
+      tensorflow/serving \
+      --model_config_file=/models/models.config \
+      --allow_version_labels_for_unavailable_models=true \
+      --model_config_file_poll_wait_seconds=60
+  ```
+  
+
+## References
+
+- https://github.com/thisisclement/Prometheus-TF-Serving
+- https://github.com/bitnami/charts/tree/main/bitnami/mongodb
+- https://www.youtube.com/watch?v=JGtJj_nAA2s
+- https://www.youtube.com/watch?v=A-3RESuvjxo
+- https://www.iguazio.com/blog/introduction-to-tf-serving/
+- https://github.com/bentoml/Yatai
+- https://medium.com/fourthline-tech/how-to-visualize-tensorflow-metrics-in-kibana-761268353ca3
