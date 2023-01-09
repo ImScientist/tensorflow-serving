@@ -24,8 +24,10 @@ spec:
             - containerPort: 8501
           args: [
             "--model_config_file=/models/models.config",
+            "--monitoring_config_file=/models/monitoring.config",
             "--allow_version_labels_for_unavailable_models=true",
-            "--model_config_file_poll_wait_seconds=60"
+            "--model_config_file_poll_wait_seconds=60",
+            "--rest_api_port=8501"
           ]
 
 ---

@@ -3,7 +3,7 @@ import tensorflow as tf
 
 
 class HalfPlusTwo(tf.Module):
-    """ Custom module """
+    """ Map x -> 0.5 * x + 2 """
 
     def __init__(self):
         super(HalfPlusTwo, self).__init__()
@@ -14,7 +14,7 @@ class HalfPlusTwo(tf.Module):
 
 
 class HalfPlusTen(tf.Module):
-    """ Custom module """
+    """ Map x -> 0.6 * x + 10 """
 
     def __init__(self):
         super(HalfPlusTen, self).__init__()
@@ -25,7 +25,7 @@ class HalfPlusTen(tf.Module):
 
 
 class HalfPlusTenAgain(tf.Module):
-    """ Custom module """
+    """ Map x -> 0.5 * x + 10 """
 
     def __init__(self):
         super(HalfPlusTenAgain, self).__init__()
@@ -51,3 +51,7 @@ def export(model_path: str):
     module = HalfPlusTenAgain()
     path = os.path.join(model_path, 'half_plus_ten', '2')
     tf.saved_model.save(module, path)
+
+
+if __name__ == '__main__':
+    export(model_path='models')

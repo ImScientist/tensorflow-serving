@@ -260,3 +260,39 @@
       --allow_version_labels_for_unavailable_models=true \
       --model_config_file_poll_wait_seconds=60
   ```
+
+
+- Setup Prometheus
+  - Customize Scrape Configurations: the possible options are explained in detail in the [official documentation](https://docs.bitnami.com/kubernetes/apps/prometheus-operator/configuration/customize-scrape-configurations/). By following it we will define the scrape configurations to be managed by the Helm chart
+    - A: Customize Scrape Configurations. It is possible to inject externally managed scrape configurations via a Secret
+      by setting:
+        - `prometheus.additionalScrapeConfigs.enabled`: true
+        - `prometheus.additionalScrapeConfigs.type`: external
+
+      The secret must exist in the same namespace which the kube-prometheus will be deployed into. Set the secret name
+      and the key containing the additional scrape configuration using the parameters:
+        - `prometheus.additionalScrapeConfigs.external.name`
+        - `prometheus.additionalScrapeConfigs.external.key`
+    - Example:
+      ```
+      prometheus.additionalScrapeConfigs.enabled=true
+      prometheus.additionalScrapeConfigs.type=external
+      prometheus.additionalScrapeConfigs.external.name=kube-prometheus-prometheus-scrape-config
+      prometheus.additionalScrapeConfigs.external.key=additional-scrape-configs.yaml
+      ``` 
+    - B: Define scrape configurations to be managed by the Helm chart. Set:
+        - `prometheus.additionalScrapeConfigs.enabled`: true
+        - `prometheus.additionalScrapeConfigs.type`: internal
+        - use `prometheus.additionalScrapeConfigs.internal.jobList` to define a list of additional scrape jobs for
+          Prometheus
+    - Example:
+      ```
+      prometheus.additionalScrapeConfigs.enabled=true
+      prometheus.additionalScrapeConfigs.type=internal
+      prometheus.additionalScrapeConfigs.internal.jobList=
+          - job_name: 'opentelemetry-collector'
+            # metrics_path defaults to '/metrics'
+            # scheme defaults to 'http'.
+            static_configs:
+              - targets: ['opentelemetry-collector:8889']
+      ``` 

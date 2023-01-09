@@ -15,10 +15,3 @@ prometheus:
               namespaces:
                 names:
                   - tfmodels
-
-#          static_configs:
-#            - targets: [ 'tf_service:8501' ]
-
-#namespaceOverride:
-#operator:
-#  namespaces: "monitoring,tfmodels"
