@@ -2,13 +2,13 @@
 
 ### Table of Contents
 
-1. [Create models](#create-models)
-2. [Serve multiple models](#serve-multiple-models)
-3. [Monitoring with Prometheus and Visualization with Grafana using docker-compose](#monitoring-with-prometheus-and-visualization-with-grafana-using-docker-compose)
-4. [Monitoring with Prometheus and Visualization with Grafana using Kubernetes](#monitoring-with-prometheus-and-visualization-with-grafana-using-kubernetes)
-5. [References](#references)
+1. [Create models](#1-create-models)
+2. [Serve multiple models](#2-serve-multiple-models)
+3. [Monitoring with Prometheus and Visualization with Grafana using docker-compose](#3-monitoring-with-prometheus-and-visualization-with-grafana-using-docker-compose)
+4. [Monitoring with Prometheus and Visualization with Grafana using Kubernetes](#4-monitoring-with-prometheus-and-visualization-with-grafana-using-kubernetes)
+5. [References](#5-references)
 
-### Create models
+### 1 Create models
 
 - We have to create and export the models that will be served. They will be stored in the `models` directory:
   ```shell
@@ -32,7 +32,7 @@
          -d '{"signature_name": "serving_default", "instances": [{"x": [0, 1, 2]}]}'
     ```
 
-### Serve multiple models
+### 2 Serve multiple models
 
 - We have to use the model server config file in `models/models.config` that specifies the locations of all exposed
   models:
@@ -64,7 +64,7 @@
       -d '{"signature_name": "serving_default", "instances": [{"x": [0, 1, 2]}]}'
   ```
 
-### Monitoring with Prometheus and Visualization with Grafana using docker-compose
+### 3 Monitoring with Prometheus and Visualization with Grafana using docker-compose
 
 - We will use the `models/monitoring.config` file that exposes a path that can be scraped by prometheus.
 
@@ -92,7 +92,7 @@
 
 - You can stop the three services with `docker-compose down`.
 
-### Monitoring with Prometheus and Visualization with Grafana using Kubernetes
+### 4 Monitoring with Prometheus and Visualization with Grafana using Kubernetes
 
 - Setup the tensorflow server
 
@@ -155,7 +155,7 @@
   helm uninstall --namespace monitoring prometheus-chart
   ```
 
-### References
+### 5 References
 
 - https://github.com/thisisclement/Prometheus-TF-Serving
 - https://github.com/bitnami/charts/tree/main/bitnami/mongodb
