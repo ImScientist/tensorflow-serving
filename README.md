@@ -81,7 +81,7 @@
       order to make local testing easier we will just extend the tensorflow server image by adding to it the models, and
       then we will push it to Dockerhub:
       ```shell
-      docker build -t tf-server:1.0.0 -f kubernetes/Dockerfile .
+      docker build -t tf-server:1.0.0 -f Dockerfile .
   
       DOCKER_HUB_USR=''
       DOCKER_HUB_PWD=''
