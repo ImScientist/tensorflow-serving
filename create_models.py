@@ -1,3 +1,22 @@
+"""
+    To test each one of the models separately execute:
+
+        ```
+        MODEL=half_plus_two  # or half_plus_ten
+        VERSION=1  # or 2
+
+        docker run -t --rm -p 8501:8501 \
+            --name=serving \
+            -v $(pwd)/models/${MODEL}/1:/models/${MODEL}/1 \
+            -e MODEL_NAME=${MODEL} \
+            tensorflow/serving:2.11.0
+
+        curl -X POST http://localhost:8501/v1/models/${MODEL}:predict \
+             -H 'Content-type: application/json' \
+             -d '{"signature_name": "serving_default", "instances": [{"x": [0, 1, 2]}]}'
+        ```
+"""
+
 import os
 import tensorflow as tf
 

@@ -2,37 +2,17 @@
 
 ### Table of Contents
 
-1. [Create models](#1-create-models)
-2. [Serve multiple models](#2-serve-multiple-models)
-3. [Monitoring with Prometheus and Visualization with Grafana using docker-compose](#3-monitoring-with-prometheus-and-visualization-with-grafana-using-docker-compose)
-4. [Monitoring with Prometheus and Visualization with Grafana using Kubernetes](#4-monitoring-with-prometheus-and-visualization-with-grafana-using-kubernetes)
-5. [References](#5-references)
+1. [Create and serve multiple models](#1-Create-and-serve-multiple-models)
+2. [Monitoring with Prometheus and Visualization with Grafana using docker-compose](#2-monitoring-with-prometheus-and-visualization-with-grafana-using-docker-compose)
+3. [Monitoring with Prometheus and Visualization with Grafana using Kubernetes](#3-monitoring-with-prometheus-and-visualization-with-grafana-using-kubernetes)
+4. [References](#4-references)
 
-### 1 Create models
+### 1 Create and serve multiple models
 
 - We have to create and export the models that will be served. They will be stored in the `models` directory:
   ```shell
   python create_models.py
   ```
-
-
-- We can test each one of them separately:
-    ```shell
-    MODEL=half_plus_two  # or half_plus_ten
-    VERSION=1  # or 2
-  
-    docker run -t --rm -p 8501:8501 \
-        --name=serving \
-        -v $(pwd)/models/${MODEL}/1:/models/${MODEL}/1 \
-        -e MODEL_NAME=${MODEL} \
-        tensorflow/serving:2.11.0
-
-    curl -X POST http://localhost:8501/v1/models/${MODEL}:predict \
-         -H 'Content-type: application/json' \
-         -d '{"signature_name": "serving_default", "instances": [{"x": [0, 1, 2]}]}'
-    ```
-
-### 2 Serve multiple models
 
 - We have to use the model server config file in `models/models.config` that specifies the locations of all exposed
   models:
@@ -64,7 +44,7 @@
       -d '{"signature_name": "serving_default", "instances": [{"x": [0, 1, 2]}]}'
   ```
 
-### 3 Monitoring with Prometheus and Visualization with Grafana using docker-compose
+### 2 Monitoring with Prometheus and Visualization with Grafana using docker-compose
 
 - We will use the `models/monitoring.config` file that exposes a path that can be scraped by prometheus.
 
@@ -92,7 +72,7 @@
 
 - You can stop the three services with `docker-compose down`.
 
-### 4 Monitoring with Prometheus and Visualization with Grafana using Kubernetes
+### 3 Monitoring with Prometheus and Visualization with Grafana using Kubernetes
 
 - Setup the tensorflow server
 
@@ -155,7 +135,7 @@
   helm uninstall --namespace monitoring prometheus-chart
   ```
 
-### 5 References
+### 4 References
 
 - https://github.com/thisisclement/Prometheus-TF-Serving
 - https://github.com/bitnami/charts/tree/main/bitnami/mongodb
