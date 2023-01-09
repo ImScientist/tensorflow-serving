@@ -49,7 +49,7 @@
 - We will use the `models/monitoring.config` file that exposes a path that can be scraped by prometheus.
 
 
-- In addition, we will use the `promeheus.yml` file. The `scrape_configs.metrics_path` matches the path exposed
+- In addition, we will use the `prometheus_docker_compose.yml` file. The `scrape_configs.metrics_path` matches the path exposed
   in `models/monitoring.config`.
 
 
@@ -113,7 +113,7 @@
     - Customize Scrape Configurations: the possible options are explained in detail in
       the [official documentation](https://docs.bitnami.com/kubernetes/apps/prometheus-operator/configuration/customize-scrape-configurations/)
       . By following it we will define the scrape configurations to be managed by the prometheus Helm chart. The
-      settings can be found in `helm/values_prometheus.yaml`. We are using the prometheus service
+      settings can be found in `prometheus_helm.yaml`. We are using the prometheus service
       discovery `kubernetes_sd_configs` to monitor the tensorflow server pods. More information how this works can be
       found in this [blog post](https://blog.krudewig-online.de/2021/02/22/Multicluster-Monitoring-with-Prometheus.html)
       .
@@ -122,7 +122,7 @@
       ```shell
       kubectl create namespace monitoring
       helm install --namespace monitoring \
-        -f helm/values_prometheus.yaml \
+        -f prometheus_helm.yaml \
         prometheus-chart bitnami/kube-prometheus
       ```
 

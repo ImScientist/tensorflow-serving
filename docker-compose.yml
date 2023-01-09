@@ -22,7 +22,7 @@ services:
     image: prom/prometheus:v2.41.0
     container_name: prometheus
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus_docker_compose.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090"
     depends_on:
