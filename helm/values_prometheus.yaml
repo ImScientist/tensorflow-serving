@@ -1,0 +1,24 @@
+prometheus:
+  additionalScrapeConfigs:
+    enabled: true
+    type: internal
+    internal:
+      jobList:
+        - job_name: 'tf-scrape'
+          scrape_interval: 5s
+          metrics_path: 'monitoring/prometheus/metrics'
+          kubernetes_sd_configs:
+            - role: pod
+              selectors:
+                - label: "app.kubernetes.io/name=tf-serving"
+                  role: pod
+              namespaces:
+                names:
+                  - tfmodels
+
+#          static_configs:
+#            - targets: [ 'tf_service:8501' ]
+
+#namespaceOverride:
+#operator:
+#  namespaces: "monitoring,tfmodels"

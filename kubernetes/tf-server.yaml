@@ -1,0 +1,46 @@
+---
+apiVersion: "apps/v1"
+kind: "Deployment"
+metadata:
+  name: "tf-server-deployment"
+  labels:
+    app: "tf-server-deployment"
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: "tf-server"
+  template:
+    metadata:
+      name: "tf-server"
+      labels:
+        app: "tf-server"
+    spec:
+      containers:
+        - name: "tf-server-container"
+          image: "docker.io/imscientist/tf-server:1.0.0"
+          # imagePullPolicy: Never
+          ports:
+            - containerPort: 8501
+          args: [
+            "--model_config_file=/models/models.config",
+            "--allow_version_labels_for_unavailable_models=true",
+            "--model_config_file_poll_wait_seconds=60"
+          ]
+
+---
+apiVersion: "v1"
+kind: "Service"
+metadata:
+  name: "tf-server-service"
+  labels:
+    app: "tf-server-service"
+spec:
+  type: "LoadBalancer"
+  selector:
+    app: "tf-server"
+  ports:
+    - name: "http"
+      protocol: "TCP"
+      port: 8501
+      targetPort: 8501
