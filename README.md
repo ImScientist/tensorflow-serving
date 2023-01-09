@@ -1,14 +1,14 @@
 # Monitor deployed tensorflow models with Prometheus and Grafana
 
+### Table of Contents
 
-## Table of Contents
 1. [Create models](#create-models)
 2. [Serve multiple models](#serve-multiple-models)
-3. [Monitoring with Prometheus and Visualization with Grafana (docker-compose)](#id-docker-compose)
-4. [Monitoring with Prometheus and Visualization with Grafana (Kubernetes)](#id-kubernetes)
+3. [Monitoring with Prometheus and Visualization with Grafana using docker-compose](#monitoring-with-prometheus-and-visualization-with-grafana-using-docker-compose)
+4. [Monitoring with Prometheus and Visualization with Grafana using Kubernetes](#monitoring-with-prometheus-and-visualization-with-grafana-using-kubernetes)
+5. [References](#references)
 
-
-## Create models
+### Create models
 
 - We have to create and export the models that will be served. They will be stored in the `models` directory:
   ```shell
@@ -32,7 +32,7 @@
          -d '{"signature_name": "serving_default", "instances": [{"x": [0, 1, 2]}]}'
     ```
 
-## Serve multiple models
+### Serve multiple models
 
 - We have to use the model server config file in `models/models.config` that specifies the locations of all exposed
   models:
@@ -64,8 +64,7 @@
       -d '{"signature_name": "serving_default", "instances": [{"x": [0, 1, 2]}]}'
   ```
 
-<div id='id-docker-compose'/>
-## Monitoring with Prometheus and Visualization with Grafana (docker-compose)
+### Monitoring with Prometheus and Visualization with Grafana using docker-compose
 
 - We will use the `models/monitoring.config` file that exposes a path that can be scraped by prometheus.
 
@@ -93,52 +92,59 @@
 
 - You can stop the three services with `docker-compose down`.
 
-<div id='id-kubernetes'/>
-## Monitoring with Prometheus and Visualization with Grafana (Kubernetes)
+### Monitoring with Prometheus and Visualization with Grafana using Kubernetes
 
 - Setup the tensorflow server
 
-  - In the ideal case we have to mount a volume that contains the models into the pod running the tensorflow server. In
-    order to make local testing easier we will just extend the tensorflow server image by adding to it the models, and
-    then we will push it to Dockerhub:
-    ```shell
-    docker build -t tf-server:1.0.0 -f kubernetes/Dockerfile .
-
-    DOCKER_HUB_USR=''
-    DOCKER_HUB_PWD=''
-
-    docker login -u "$DOCKER_HUB_USR" -p "$DOCKER_HUB_PWD"
-    docker tag tf-server:1.0.0 $DOCKER_HUB_USR/tf-server:1.0.0
-    docker push docker.io/$DOCKER_HUB_USR/tf-server:1.0.0
+    - In the ideal case we have to mount a volume that contains the models into the pod running the tensorflow server.
+      In
+      order to make local testing easier we will just extend the tensorflow server image by adding to it the models, and
+      then we will push it to Dockerhub:
+      ```shell
+      docker build -t tf-server:1.0.0 -f kubernetes/Dockerfile .
   
-    # test
-    kubectl apply -f kubernetes/tf-server.yaml
-    kubectl delete -f kubernetes/tf-server.yaml
-    ```
+      DOCKER_HUB_USR=''
+      DOCKER_HUB_PWD=''
+  
+      docker login -u "$DOCKER_HUB_USR" -p "$DOCKER_HUB_PWD"
+      docker tag tf-server:1.0.0 $DOCKER_HUB_USR/tf-server:1.0.0
+      docker push docker.io/$DOCKER_HUB_USR/tf-server:1.0.0
+    
+      # test
+      kubectl apply -f kubernetes/tf-server.yaml
+      kubectl delete -f kubernetes/tf-server.yaml
+      ```
 
-  - From the `values.yaml` in the helm chart for the tensorflow server you can see that:
-    - we have enabled only the service component but not the ingress component. This has to be changed at some point.
-    - we are pulling the tensorflow server image from `docker.io/imscientist/tf-server`
+    - From the `values.yaml` in the helm chart for the tensorflow server you can see that:
+        - we have enabled only the service component but not the ingress component. This has to be changed at some
+          point.
+        - we are pulling the tensorflow server image from `docker.io/imscientist/tf-server`
 
-  - Besides `values.yaml`, `Chart.yaml` and `templates/deplyment.yaml` we have not changed the default template.
+    - Besides `values.yaml`, `Chart.yaml` and `templates/deplyment.yaml` we have not changed the default template.
 
-  - Create the server with:
-    ```shell
-    kubectl create namespace tfmodels
-    helm install --namespace tfmodels tf-serving-chart helm/tf-serving
-    ```
+    - Create the server with:
+      ```shell
+      kubectl create namespace tfmodels
+      helm install --namespace tfmodels tf-serving-chart helm/tf-serving
+      ```
 
 
 - Setup Prometheus
-  - Customize Scrape Configurations: the possible options are explained in detail in the [official documentation](https://docs.bitnami.com/kubernetes/apps/prometheus-operator/configuration/customize-scrape-configurations/). By following it we will define the scrape configurations to be managed by the prometheus Helm chart. The settings can be found in `helm/values_prometheus.yaml`. We are using the prometheus service discovery `kubernetes_sd_configs` to monitor the tensorflow server pods. More information how this works can be found in this [blog post](https://blog.krudewig-online.de/2021/02/22/Multicluster-Monitoring-with-Prometheus.html).  
+    - Customize Scrape Configurations: the possible options are explained in detail in
+      the [official documentation](https://docs.bitnami.com/kubernetes/apps/prometheus-operator/configuration/customize-scrape-configurations/)
+      . By following it we will define the scrape configurations to be managed by the prometheus Helm chart. The
+      settings can be found in `helm/values_prometheus.yaml`. We are using the prometheus service
+      discovery `kubernetes_sd_configs` to monitor the tensorflow server pods. More information how this works can be
+      found in this [blog post](https://blog.krudewig-online.de/2021/02/22/Multicluster-Monitoring-with-Prometheus.html)
+      .
 
-  - Launch prometheus with:
-    ```shell
-    kubectl create namespace monitoring
-    helm install --namespace monitoring \
-      -f helm/values_prometheus.yaml \
-      prometheus-chart bitnami/kube-prometheus
-    ```
+    - Launch prometheus with:
+      ```shell
+      kubectl create namespace monitoring
+      helm install --namespace monitoring \
+        -f helm/values_prometheus.yaml \
+        prometheus-chart bitnami/kube-prometheus
+      ```
 
 - Setup Grafana (todo: figure out how it is going to discover Prometheus)
 
@@ -149,7 +155,7 @@
   helm uninstall --namespace monitoring prometheus-chart
   ```
 
-## References
+### References
 
 - https://github.com/thisisclement/Prometheus-TF-Serving
 - https://github.com/bitnami/charts/tree/main/bitnami/mongodb
