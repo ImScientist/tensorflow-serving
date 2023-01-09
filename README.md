@@ -90,9 +90,9 @@
       docker tag tf-server:1.0.0 $DOCKER_HUB_USR/tf-server:1.0.0
       docker push docker.io/$DOCKER_HUB_USR/tf-server:1.0.0
     
-      # test
-      kubectl apply -f kubernetes/tf-server.yaml
-      kubectl delete -f kubernetes/tf-server.yaml
+      # Create the server
+      kubectl create namespace tfmodels
+      helm install --namespace tfmodels tf-serving-chart helm/tf-serving
       ```
 
     - From the `values.yaml` in the helm chart for the tensorflow server you can see that:
@@ -101,12 +101,6 @@
         - we are pulling the tensorflow server image from `docker.io/imscientist/tf-server`
 
     - Besides `values.yaml`, `Chart.yaml` and `templates/deplyment.yaml` we have not changed the default template.
-
-    - Create the server with:
-      ```shell
-      kubectl create namespace tfmodels
-      helm install --namespace tfmodels tf-serving-chart helm/tf-serving
-      ```
 
 
 - Setup Prometheus
