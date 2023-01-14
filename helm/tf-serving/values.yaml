@@ -5,8 +5,10 @@
 replicaCount: 1
 
 image:
-  repository: docker.io/imscientist/tf-server
-  pullPolicy: IfNotPresent
+  repository: tf-server
+  pullPolicy: Never
+  # repository: docker.io/imscientist/tf-server
+  # pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: "1.0.0"
 
@@ -37,7 +39,8 @@ securityContext: {}
   # runAsUser: 1000
 
 service:
-  type: ClusterIP
+  # type: ClusterIP
+  type: LoadBalancer
   port: 8501
 
 ingress:
