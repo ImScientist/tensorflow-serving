@@ -145,16 +145,11 @@
   helm uninstall --namespace tfmodels tf-serving-chart
   helm uninstall --namespace monitoring prometheus-chart
   helm uninstall --namespace monitoring grafana-cahrt
+  kubectl delete namespace tfmodels
+  kubectl delete namespace monitoring
   ```
 
 ### 4 References
-
-
-$$
-\Gamma(z) = \int_0^\infty t^{z-1}e^{-t}dt\,.
-$$
-
-
 
 - https://github.com/thisisclement/Prometheus-TF-Serving
 - https://github.com/bitnami/charts/tree/main/bitnami/mongodb
