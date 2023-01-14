@@ -49,7 +49,8 @@
 - We will use the `models/monitoring.config` file that exposes a path that can be scraped by prometheus.
 
 
-- In addition, we will use the `prometheus_docker_compose.yml` file. The `scrape_configs.metrics_path` matches the path exposed
+- In addition, we will use the `prometheus_docker_compose.yml` file. The `scrape_configs.metrics_path` matches the path
+  exposed
   in `models/monitoring.config`.
 
 
@@ -74,22 +75,14 @@
 
 ### 3 Monitoring with Prometheus and Visualization with Grafana using Kubernetes
 
-- Setup the tensorflow server
+- Tensorflow server
 
     - In the ideal case we have to mount a volume that contains the models into the pod running the tensorflow server.
       In
-      order to make local testing easier we will just extend the tensorflow server image by adding to it the models, and
-      then we will push it to Dockerhub:
+      order to make local testing easier we will just extend the tensorflow server image by adding to it the models:
       ```shell
       docker build -t tf-server:1.0.0 -f Dockerfile .
   
-      DOCKER_HUB_USR=''
-      DOCKER_HUB_PWD=''
-  
-      docker login -u "$DOCKER_HUB_USR" -p "$DOCKER_HUB_PWD"
-      docker tag tf-server:1.0.0 $DOCKER_HUB_USR/tf-server:1.0.0
-      docker push docker.io/$DOCKER_HUB_USR/tf-server:1.0.0
-    
       # Create the server
       kubectl create namespace tfmodels
       helm install --namespace tfmodels tf-serving-chart helm/tf-serving
@@ -98,15 +91,16 @@
     - From the `values.yaml` in the helm chart for the tensorflow server you can see that:
         - we have enabled only the service component but not the ingress component. This has to be changed at some
           point.
-        - we are pulling the tensorflow server image from `docker.io/imscientist/tf-server`
+        - we are pulling the locally stored tensorflow server image by setting `pullPolicy: Never`
+          in `tf-serving/values.yaml`.
 
     - Besides `values.yaml`, `Chart.yaml` and `templates/deplyment.yaml` we have not changed the default template.
+    - Since we have used a service of type LoadBalancer we can make API calls to the service in the same way as we did before.
 
 
-- Setup Prometheus
+- Prometheus
     - Customize Scrape Configurations: the possible options are explained in detail in
-      the [official documentation](https://docs.bitnami.com/kubernetes/apps/prometheus-operator/configuration/customize-scrape-configurations/)
-      . By following it we will define the scrape configurations to be managed by the prometheus Helm chart. The
+      the [official documentation](https://docs.bitnami.com/kubernetes/apps/prometheus-operator/configuration/customize-scrape-configurations/). We will define the scrape configurations to be managed by the prometheus Helm chart. The
       settings can be found in `prometheus_helm.yaml`. We are using the prometheus service
       discovery `kubernetes_sd_configs` to monitor the tensorflow server pods. More information how this works can be
       found in this [blog post](https://blog.krudewig-online.de/2021/02/22/Multicluster-Monitoring-with-Prometheus.html)
@@ -119,14 +113,38 @@
         -f prometheus_helm.yaml \
         prometheus-chart bitnami/kube-prometheus
       ```
+      You should get a message telling you under which DNS from within the cluster Prometheus can be accessed. 
+      ```shell
+      Prometheus can be accessed via port "9090" on the following DNS name from within your cluster:
+      
+        prometheus-chart-kube-prom-prometheus.monitoring.svc.cluster.local
+      ```
+      To access Prometheus from outside the cluster execute the following command:
+      ```shell
+      kubectl -n monitoring port-forward svc/prometheus-chart-kube-prom-prometheus 9090:9090
+      # Browse to http://127.0.0.1:9090"
+      ```
 
-- Setup Grafana (todo: figure out how it is going to discover Prometheus)
+
+- Grafana
+  - Launch Grafana with:
+    ```shell
+    helm install --namespace monitoring \
+      grafana-chart bitnami/grafana
+    ```
+    To access Grafana from outside the cluster execute the following command:
+    ```shell
+    kubectl -n monitoring port-forward svc/grafana-chart 8081:3000 &
+    # Browse to http://127.0.0.1:8081" to access the service
+    ```
+  - You can add Prometheus as a datasource by using the previously obtained prometheus DNS name as a datasource URL: `http://prometheus-chart-kube-prom-prometheus.monitoring.svc.cluster.local:9090`.
 
 
-- Remove all services with:
+- Remove all services:
   ```shell
   helm uninstall --namespace tfmodels tf-serving-chart
   helm uninstall --namespace monitoring prometheus-chart
+  helm uninstall --namespace monitoring grafana-cahrt
   ```
 
 ### 4 References
@@ -140,3 +158,5 @@
 - https://medium.com/fourthline-tech/how-to-visualize-tensorflow-metrics-in-kibana-761268353ca3
 - https://blog.krudewig-online.de/2021/02/22/Multicluster-Monitoring-with-Prometheus.html
 - https://github.com/bitnami/charts/tree/main/bitnami/kube-prometheus
+- https://docs.bitnami.com/tutorials/create-multi-cluster-monitoring-dashboard-thanos-grafana-prometheus/
+- https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/
