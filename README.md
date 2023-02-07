@@ -145,6 +145,8 @@
   helm uninstall --namespace tfmodels tf-serving-chart
   helm uninstall --namespace monitoring prometheus-chart
   helm uninstall --namespace monitoring grafana-cahrt
+  kubectl delete namespace tfmodels
+  kubectl delete namespace monitoring
   ```
 
 ### 4 References
