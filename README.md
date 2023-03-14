@@ -95,12 +95,14 @@
           in `tf-serving/values.yaml`.
 
     - Besides `values.yaml`, `Chart.yaml` and `templates/deplyment.yaml` we have not changed the default template.
-    - Since we have used a service of type LoadBalancer we can make API calls to the service in the same way as we did before.
+    - Since we have used a service of type LoadBalancer we can make API calls to the service in the same way as we did
+      before.
 
 
 - Prometheus
     - Customize Scrape Configurations: the possible options are explained in detail in
-      the [official documentation](https://docs.bitnami.com/kubernetes/apps/prometheus-operator/configuration/customize-scrape-configurations/). We will define the scrape configurations to be managed by the prometheus Helm chart. The
+      the [official documentation](https://docs.bitnami.com/kubernetes/apps/prometheus-operator/configuration/customize-scrape-configurations/)
+      . We will define the scrape configurations to be managed by the prometheus Helm chart. The
       settings can be found in `prometheus_helm.yaml`. We are using the prometheus service
       discovery `kubernetes_sd_configs` to monitor the tensorflow server pods. More information how this works can be
       found in this [blog post](https://blog.krudewig-online.de/2021/02/22/Multicluster-Monitoring-with-Prometheus.html)
@@ -113,7 +115,7 @@
         -f prometheus_helm.yaml \
         prometheus-chart bitnami/kube-prometheus
       ```
-      You should get a message telling you under which DNS from within the cluster Prometheus can be accessed. 
+      You should get a message telling you under which DNS from within the cluster Prometheus can be accessed.
       ```shell
       Prometheus can be accessed via port "9090" on the following DNS name from within your cluster:
       
@@ -122,22 +124,23 @@
       To access Prometheus from outside the cluster execute the following command:
       ```shell
       kubectl -n monitoring port-forward svc/prometheus-chart-kube-prom-prometheus 9090:9090
-      # Browse to http://127.0.0.1:9090"
+      # Browse to http://127.0.0.1:9090
       ```
 
 
 - Grafana
-  - Launch Grafana with:
-    ```shell
-    helm install --namespace monitoring \
-      grafana-chart bitnami/grafana
-    ```
-    To access Grafana from outside the cluster execute the following command:
-    ```shell
-    kubectl -n monitoring port-forward svc/grafana-chart 8081:3000 &
-    # Browse to http://127.0.0.1:8081" to access the service
-    ```
-  - You can add Prometheus as a datasource by using the previously obtained prometheus DNS name as a datasource URL: `http://prometheus-chart-kube-prom-prometheus.monitoring.svc.cluster.local:9090`.
+    - Launch Grafana with:
+      ```shell
+      helm install --namespace monitoring \
+        grafana-chart bitnami/grafana
+      ```
+      To access Grafana from outside the cluster execute the following command:
+      ```shell
+      kubectl -n monitoring port-forward svc/grafana-chart 8081:3000 &
+      # Browse to http://127.0.0.1:8081 to access the service
+      ```
+    - You can add Prometheus as a datasource by using the previously obtained prometheus DNS name as a datasource
+      URL: `http://prometheus-chart-kube-prom-prometheus.monitoring.svc.cluster.local:9090`.
 
 
 - Remove all services:
