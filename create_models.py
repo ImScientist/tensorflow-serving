@@ -7,18 +7,23 @@
 
         docker run -t --rm -p 8501:8501 \
             --name=serving \
-            -v $(pwd)/models/${MODEL}/1:/models/${MODEL}/1 \
+            -v $(pwd)/models/${MODEL}/${VERSION}:/models/${MODEL}/${VERSION} \
             -e MODEL_NAME=${MODEL} \
             tensorflow/serving:2.11.0
 
-        curl -X POST http://localhost:8501/v1/models/${MODEL}:predict \
+        curl -X POST http://localhost:8501/v1/models/${MODEL}/versions/${VERSION}:predict \
              -H 'Content-type: application/json' \
              -d '{"signature_name": "serving_default", "instances": [{"x": [0, 1, 2]}]}'
         ```
 """
 
 import os
+import logging
 import tensorflow as tf
+
+logging.basicConfig()
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 
 class HalfPlusTwo(tf.Module):
@@ -62,14 +67,17 @@ def export(model_path: str):
     module = HalfPlusTwo()
     path = os.path.join(model_path, 'half_plus_two', '1')
     tf.saved_model.save(module, path)
+    logger.info(f"Model exported in {path}")
 
     module = HalfPlusTen()
     path = os.path.join(model_path, 'half_plus_ten', '1')
     tf.saved_model.save(module, path)
+    logger.info(f"Model exported in {path}")
 
     module = HalfPlusTenAgain()
     path = os.path.join(model_path, 'half_plus_ten', '2')
     tf.saved_model.save(module, path)
+    logger.info(f"Model exported in {path}")
 
 
 if __name__ == '__main__':
