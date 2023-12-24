@@ -124,7 +124,7 @@
       ```shell
       kubectl apply -f helm/prometheus/servicemonitor.yaml
       ```
-      In the prometheus UI under Status -> Targets you should see that a new serviceMonitor component was discovered.
+      The labels under `spec.selector.matchLabels` should match the labels of the service whose metrics endpoint we want to monitor (`/monitoring/prometheus/metrics`). In the prometheus UI under Status -> Targets you should see that a new serviceMonitor component was discovered.
 
 
 - Grafana
