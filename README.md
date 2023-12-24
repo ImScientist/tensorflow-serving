@@ -100,13 +100,6 @@
 
 
 - Prometheus
-    - Customize Scrape Configurations: the possible options are explained in detail in
-      the [official documentation](https://docs.bitnami.com/kubernetes/apps/prometheus-operator/configuration/customize-scrape-configurations/)
-      . We will define the scrape configurations to be managed by the prometheus Helm chart. The
-      settings can be found in `prometheus_helm.yaml`. We are using the prometheus service
-      discovery `kubernetes_sd_configs` to monitor the tensorflow server pods. More information how this works can be
-      found in this [blog post](https://blog.krudewig-online.de/2021/02/22/Multicluster-Monitoring-with-Prometheus.html)
-      .
 
     - Launch prometheus with:
       ```shell
@@ -126,6 +119,12 @@
       kubectl -n monitoring port-forward svc/prometheus-chart-kube-prom-prometheus 9090:9090
       # Browse to http://127.0.0.1:9090
       ```
+
+    - To force Prometheus to monitor our service in tfmodels namespace, create a new `ServiceMonitor` component:
+      ```shell
+      kubectl apply -f helm/prometheus/servicemonitor.yaml
+      ```
+      In the prometheus UI under Status -> Targets you should see that a new serviceMonitor component was discovered.
 
 
 - Grafana

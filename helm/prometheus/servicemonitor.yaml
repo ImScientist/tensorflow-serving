@@ -1,0 +1,17 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: prometheus-service-monitor
+  namespace: monitoring
+spec:
+  endpoints:
+  - path: '/monitoring/prometheus/metrics'
+    port: http
+    interval: 10s
+  namespaceSelector:
+    matchNames:
+    - tfmodels
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: tf-serving-chart
+      app.kubernetes.io/name: tf-serving
