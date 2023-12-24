@@ -135,7 +135,7 @@
       ```
       To access Grafana from outside the cluster execute the following command:
       ```shell
-      kubectl -n monitoring port-forward svc/grafana-chart 8081:3000 &
+      kubectl -n monitoring port-forward svc/grafana-chart 8081:3000
       # Browse to http://127.0.0.1:8081 to access the service
       ```
     - You can add Prometheus as a datasource by using the previously obtained prometheus DNS name as a datasource
