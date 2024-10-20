@@ -75,6 +75,10 @@
 
 ### 3 Monitoring with Prometheus and Visualization with Grafana using Kubernetes
 
+The code snippets below are tested locally on the [rancher-desktop](https://rancherdesktop.io/) context but it should
+work for docker-desktop users, as well. We will mention the places that were changed explicitly to
+make things work locally.
+
 - Tensorflow server
 
     - In the ideal case we have to mount a volume that contains the models into the pod running the tensorflow server.
@@ -103,9 +107,10 @@
 
     - Launch prometheus with:
       ```shell
+      # helm repo add bitnami https://charts.bitnami.com/bitnami
+      
       kubectl create namespace monitoring
       helm install --namespace monitoring \
-        -f prometheus_helm.yaml \
         prometheus-chart bitnami/kube-prometheus
       ```
       You should get a message telling you under which DNS from within the cluster Prometheus can be accessed.
@@ -140,13 +145,23 @@
       ```
     - You can add Prometheus as a datasource by using the previously obtained prometheus DNS name as a datasource
       URL: `http://prometheus-chart-kube-prom-prometheus.monitoring.svc.cluster.local:9090`.
+    - You should be able to create your first dashboard by using the metric `:tensorflow:serving:request_count` 
+      and Prometheus as a data source.
+    - You can make few model predictions by executing the same curl-code snippets, as before, and then
+      running the `:tensorflow:serving:request_count` query in the Prometheus UI. 
+    
+    <br>
+    <p float="left">
+      <img src="media/grafana_data_sources.png" height="300" />
+      <img src="media/grafana_dashboard.png" height="300" />
+    </p>
 
 
 - Remove all services:
   ```shell
   helm uninstall --namespace tfmodels tf-serving-chart
   helm uninstall --namespace monitoring prometheus-chart
-  helm uninstall --namespace monitoring grafana-cahrt
+  helm uninstall --namespace monitoring grafana-chart
   kubectl delete -f helm/prometheus/servicemonitor.yaml
   kubectl delete namespace tfmodels
   kubectl delete namespace monitoring
