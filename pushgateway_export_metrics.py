@@ -36,7 +36,6 @@ def generate_data(seed: int = None) -> pd.DataFrame:
     data['rmse'] = np.random.exponential(size=(5,)).round(2)
     data['mae'] = np.random.exponential(size=(5,)).round(2)
 
-    # return data.iloc[:3]
     return data
 
 
@@ -61,5 +60,5 @@ if __name__ == '__main__':
 
     while True:
         record_predictions(counter)
-        time.sleep(6)
+        time.sleep(30)
         counter += 1

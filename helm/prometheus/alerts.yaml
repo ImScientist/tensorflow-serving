@@ -8,7 +8,7 @@ spec:
   - name: test-group
     rules:
     - alert: PushgatewayFewExportedResults
-      expr: count(results_test) < 20
+      expr: count(results_test) < 10
       for: 2m
       labels:
         service: pushgateway

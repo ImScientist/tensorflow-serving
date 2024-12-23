@@ -129,7 +129,9 @@ make things work locally.
       ```shell
       kubectl apply -f helm/prometheus/servicemonitor.yaml
       ```
-      The labels under `spec.selector.matchLabels` should match the labels of the service whose metrics endpoint we want to monitor (`/monitoring/prometheus/metrics`). In the prometheus UI under Status -> Targets you should see that a new serviceMonitor component was discovered.
+      The labels under `spec.selector.matchLabels` should match the labels of the service whose metrics endpoint we want
+      to monitor (`/monitoring/prometheus/metrics`). In the prometheus UI under Status -> Targets you should see that a
+      new serviceMonitor component was discovered.
 
 
 - Grafana
@@ -145,15 +147,57 @@ make things work locally.
       ```
     - You can add Prometheus as a datasource by using the previously obtained prometheus DNS name as a datasource
       URL: `http://prometheus-chart-kube-prom-prometheus.monitoring.svc.cluster.local:9090`.
-    - You should be able to create your first dashboard by using the metric `:tensorflow:serving:request_count` 
+    - You should be able to create your first dashboard by using the metric `:tensorflow:serving:request_count`
       and Prometheus as a data source.
     - You can make few model predictions by executing the same curl-code snippets, as before, and then
-      running the `:tensorflow:serving:request_count` query in the Prometheus UI. 
-    
+      running the `:tensorflow:serving:request_count` query in the Prometheus UI.
+
+        <br>
+        <p float="left">
+          <img src="media/grafana_data_sources.png" height="300" />
+          <img src="media/grafana_dashboard.png" height="300" />
+        </p>
+
+- (Optional) Pushgateway and Alerts:  
+  If you are running jobs with short lifespan, instead of exposing a `/metrics` endpoint, you can actively push
+  all the metrics to a Pushgateway that will live even after the jobs exits, and will be scraped by Prometheus.
+    - Create a Pushgateway as follows:
+      ```shell
+      # helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+      
+      helm install --namespace default -f helm/pushgateway/values.yaml \
+          pushgateway-chart prometheus-community/prometheus-pushgateway
+      ```
+    - To access the Pushgateway from outside the cluster execute the following command:
+      ```shell
+      kubectl -n default port-forward svc/pushgateway-chart-prometheus-pushgateway 9091:9091
+      # Browse to http://127.0.0.1:9091/
+      ```
+    - You can test sending metrics to the Pushgateway by running the following script:
+      ```shell
+      # There has to be a proxy of the pushgateway service
+      python pushgateway_export_metrics.py
+      ```
+      Check the Pushgateway UI or `http://127.0.0.1:9091/metrics` to see the exported metrics.
+    - To make the metrics stored in the Pushgateway accessible by Prometheus, we have to
+      let Prometheus discover the new service by creating a new ServiceMonitor component:
+      ```shell
+      kubectl apply -f helm/prometheus/servicemonitor_pushgateway.yaml
+      ```
+      You should be able to discover the same metrics within the Prometheus UI. The updates of a metric will arrive with
+      a slight delay because the `/metrics` endpoint of the Pushgateway is scraped once every 10 seconds.
+      
+  - To create an alert rule you can use the following example:
+    ```shell
+    kubectl apply -f helm/prometheus/alerts.yaml
+    # Browse http://127.0.0.1:9090/alerts
+    ```
+    If you have stopped executing `pushgateway_export_metrics.py` then the alert should be triggered. You can open the
+    Alerts tab of the Prometheus UI to check if this is indeed the case.
+  
     <br>
     <p float="left">
-      <img src="media/grafana_data_sources.png" height="300" />
-      <img src="media/grafana_dashboard.png" height="300" />
+      <img src="media/prometheus_alert.png" height="300" />
     </p>
 
 
@@ -162,7 +206,12 @@ make things work locally.
   helm uninstall --namespace tfmodels tf-serving-chart
   helm uninstall --namespace monitoring prometheus-chart
   helm uninstall --namespace monitoring grafana-chart
+  helm uninstall --namespace default pushgateway-chart
+  
   kubectl delete -f helm/prometheus/servicemonitor.yaml
+  kubectl delete -f helm/prometheus/servicemonitor_pushgateway.yaml
+  kubectl delete -f helm/prometheus/alerts.yaml
+  
   kubectl delete namespace tfmodels
   kubectl delete namespace monitoring
   ```
