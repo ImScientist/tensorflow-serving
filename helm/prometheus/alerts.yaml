@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: prometheus-rule-ai
+  namespace: monitoring
+spec:
+  groups:
+  - name: test-group
+    rules:
+    - alert: PushgatewayFewExportedResults
+      expr: count(results_test) < 20
+      for: 2m
+      labels:
+        service: pushgateway
+        severity: critical
+      annotations:
+        summary: Too few exported test results to Pushgateway
+        description: The number of metrics generated from a batch job is below 20 for more than 2 minutes
